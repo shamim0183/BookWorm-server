@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const jwt = require("jsonwebtoken")
+const admin = require("../config/firebase-admin")
 const User = require("../models/User")
 const { protect } = require("../middleware/auth")
 
@@ -69,6 +70,75 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
+})
+
+// Firebase Authentication (Google Sign-In)
+router.post("/firebase", async (req, res) => {
+  try {
+    const { firebaseToken, email, name, photoURL } = req.body
+
+    if (!firebaseToken || !email) {
+      return res
+        .status(400)
+        .json({ error: "Firebase token and email required" })
+    }
+
+    // Verify Firebase ID token
+    let decodedToken
+    try {
+      decodedToken = await admin.auth().verifyIdToken(firebaseToken)
+    } catch (error) {
+      return res.status(401).json({ error: "Invalid Firebase token" })
+    }
+
+    // Check if user exists, if not create one
+    let user = await User.findOne({ email })
+
+    if (!user) {
+      // Create new user from Firebase data
+      user = await User.create({
+        name: name || decodedToken.name || email.split("@")[0],
+        email: email,
+        password: Math.random().toString(36).slice(-8), // Random password for Google users
+        photoURL: photoURL || decodedToken.picture || "",
+        firebaseUid: decodedToken.uid,
+      })
+    } else if (!user.firebaseUid) {
+      // Update existing user with Firebase UID
+      user.firebaseUid = decodedToken.uid
+      await user.save()
+    }
+
+    const token = generateToken(user._id)
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        photoURL: user.photoURL,
+        role: user.role,
+      },
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Verify JWT token and return user data
+router.get("/verify", protect, async (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      photoURL: req.user.photoURL,
+      role: req.user.role,
+    },
+  })
 })
 
 // Get current user

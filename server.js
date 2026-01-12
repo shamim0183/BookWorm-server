@@ -30,6 +30,8 @@ app.use("/api/auth", require("./routes/auth"))
 app.use("/api/books", require("./routes/books"))
 app.use("/api/genres", require("./routes/genres"))
 app.use("/api/library", require("./routes/library"))
+app.use("/api/upload", require("./routes/upload"))
+app.use("/api/stats", require("./routes/stats"))
 
 // Error handling
 app.use((err, req, res, next) => {

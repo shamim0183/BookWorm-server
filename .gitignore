@@ -3,6 +3,7 @@
 
 # env files
 .env
+*-firebase-adminsdk-*.json
 
 # misc
 .DS_Store

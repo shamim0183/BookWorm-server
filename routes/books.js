@@ -51,7 +51,7 @@ router.get("/:id", async (req, res) => {
 })
 
 // Create
-router.post("/", protect, adminOnly, async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
     const book = await Book.create({ ...req.body, createdBy: req.user._id })
     const populated = await Book.findById(book._id).populate("genres", "name")
@@ -62,7 +62,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
 })
 
 // Update
-router.put("/:id", protect, adminOnly, async (req, res) => {
+router.put("/:id", protect, async (req, res) => {
   try {
     const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -74,7 +74,7 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
 })
 
 // Delete
-router.delete("/:id", protect, adminOnly, async (req, res) => {
+router.delete("/:id", protect, async (req, res) => {
   try {
     await Book.findByIdAndDelete(req.params.id)
     res.json({ success: true, message: "Book deleted" })
