@@ -32,6 +32,7 @@ app.use("/api/genres", require("./routes/genres"))
 app.use("/api/library", require("./routes/library"))
 app.use("/api/upload", require("./routes/upload"))
 app.use("/api/stats", require("./routes/stats"))
+app.use("/api/users", require("./routes/users"))
 
 // Error handling
 app.use((err, req, res, next) => {
