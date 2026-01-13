@@ -1,21 +1,33 @@
 const express = require("express")
 const router = express.Router()
 const Tutorial = require("../models/Tutorial")
+const User = require("../models/User")
+const jwt = require("jsonwebtoken")
 const { protect, adminOnly } = require("../middleware/auth")
 
 // Middleware to check if user is authenticated (optional)
-const optionalAuth = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]
-  if (token) {
-    try {
-      const jwt = require("jsonwebtoken")
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      req.user = { _id: decoded.id, role: decoded.role }
-    } catch (error) {
-      // Token invalid, proceed as guest
+const optionalAuth = async (req, res, next) => {
+  try {
+    let token
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1]
     }
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        req.user = await User.findById(decoded.id).select("-password")
+      } catch (error) {
+        // Token invalid, proceed as guest
+      }
+    }
+    next()
+  } catch (error) {
+    next()
   }
-  next()
 }
 
 // Get all tutorials (public or admin)
