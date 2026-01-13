@@ -1,7 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const multer = require("multer")
-const admin = require("../config/firebase-admin")
+const axios = require("axios")
+const FormData = require("form-data")
 const { protect } = require("../middleware/auth")
 
 // Configure multer for memory storage
@@ -19,7 +20,7 @@ const upload = multer({
   },
 })
 
-// Upload book cover to Firebase Storage
+// Upload book cover to ImgBB
 router.post(
   "/book-cover",
   protect,
@@ -30,35 +31,40 @@ router.post(
         return res.status(400).json({ error: "No file uploaded" })
       }
 
-      // Initialize Firebase Storage bucket
-      const bucket = admin.storage().bucket()
+      // Check if API key is configured
+      if (!process.env.IMGBB_API_KEY) {
+        return res.status(500).json({
+          error:
+            "ImgBB API key not configured. Please add IMGBB_API_KEY to .env file",
+        })
+      }
 
-      // Create a unique filename
-      const timestamp = Date.now()
-      const filename = `book-covers/${req.user._id}_${timestamp}_${req.file.originalname}`
+      // Prepare form data for ImgBB
+      const formData = new FormData()
+      formData.append("image", req.file.buffer.toString("base64"))
 
-      // Create a reference to the file
-      const file = bucket.file(filename)
+      // Upload to ImgBB
+      const response = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
+        formData,
+        {
+          headers: formData.getHeaders(),
+        }
+      )
 
-      // Upload the file
-      await file.save(req.file.buffer, {
-        metadata: {
-          contentType: req.file.mimetype,
-        },
-        public: true, // Make the file publicly accessible
-      })
-
-      // Get the public URL
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`
+      // Get the image URL from response
+      const imageUrl = response.data.data.display_url
 
       res.json({
         success: true,
-        url: publicUrl,
+        url: imageUrl,
         message: "Book cover uploaded successfully",
       })
     } catch (error) {
-      console.error("Upload error:", error)
-      res.status(500).json({ error: error.message })
+      console.error("Upload error:", error.response?.data || error.message)
+      res.status(500).json({
+        error: error.response?.data?.error?.message || error.message,
+      })
     }
   }
 )
