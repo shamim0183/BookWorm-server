@@ -3,10 +3,10 @@ const router = express.Router()
 const Book = require("../models/Book")
 const UserLibrary = require("../models/UserLibrary")
 const Review = require("../models/Review")
-const auth = require("../middleware/auth")
+const { protect } = require("../middleware/auth")
 
 // GET /api/recommendations - Get personalized book recommendations
-router.get("/", auth, async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
     const userId = req.user._id
 
