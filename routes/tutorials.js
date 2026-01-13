@@ -62,7 +62,7 @@ router.get("/:id", async (req, res) => {
 // Create tutorial (admin only)
 router.post("/", protect, adminOnly, async (req, res) => {
   try {
-    const { title, description, content, category, status } = req.body
+    const { title, description, content, videoUrl, category, status } = req.body
 
     if (!title || !description || !content) {
       return res
@@ -74,6 +74,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
       title,
       description,
       content,
+      videoUrl,
       category,
       status: status || "draft",
       author: req.user._id,
@@ -96,11 +97,11 @@ router.post("/", protect, adminOnly, async (req, res) => {
 // Update tutorial (admin only)
 router.put("/:id", protect, adminOnly, async (req, res) => {
   try {
-    const { title, description, content, category, status } = req.body
+    const { title, description, content, videoUrl, category, status } = req.body
 
     const tutorial = await Tutorial.findByIdAndUpdate(
       req.params.id,
-      { title, description, content, category, status },
+      { title, description, content, videoUrl, category, status },
       { new: true, runValidators: true }
     ).populate("author", "name photoURL")
 

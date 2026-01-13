@@ -16,6 +16,10 @@ const tutorialSchema = new mongoose.Schema(
       type: String,
       required: [true, "Content is required"],
     },
+    videoUrl: {
+      type: String,
+      trim: true,
+    },
     category: {
       type: String,
       required: true,
