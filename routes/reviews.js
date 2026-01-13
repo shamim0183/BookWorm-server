@@ -86,6 +86,53 @@ router.post("/", protect, async (req, res) => {
   }
 })
 
+// Update a review (user can edit their own review)
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const { rating, comment } = req.body
+    const review = await Review.findById(req.params.id)
+
+    if (!review) {
+      return res.status(404).json({ error: "Review not found" })
+    }
+
+    // Only the review author can update it
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" })
+    }
+
+    // Update the review
+    review.rating = rating
+    review.comment = comment
+    await review.save()
+
+    // Recalculate book rating
+    const bookReviews = await Review.find({
+      book: review.book,
+      status: "approved",
+    })
+    const avgRating =
+      bookReviews.reduce((sum, r) => sum + r.rating, 0) / bookReviews.length
+
+    await Book.findByIdAndUpdate(review.book, {
+      "ratings.average": avgRating,
+      "ratings.count": bookReviews.length,
+    })
+
+    const updatedReview = await Review.findById(review._id)
+      .populate("user", "name photoURL")
+      .populate("book", "title author")
+
+    res.json({
+      success: true,
+      review: updatedReview,
+      message: "Review updated successfully",
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Update review status (admin only)
 router.put("/:id/status", protect, adminOnly, async (req, res) => {
   try {

@@ -26,7 +26,7 @@ const reviewSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
-      default: "approved", // Auto-approve for now, can be changed to "pending"
+      default: "pending", // Auto-pending for now, can be changed to "approved"
     },
     moderatedBy: {
       type: mongoose.Schema.Types.ObjectId,
