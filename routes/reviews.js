@@ -37,6 +37,35 @@ router.get("/", protect, async (req, res) => {
   }
 })
 
+// Get all reviews for a book
+router.get("/book/:bookId", async (req, res) => {
+  try {
+    const { bookId } = req.params
+
+    // Get approved reviews with populated user and book data
+    let reviews = await Review.find({ book: bookId, status: "approved" })
+      .populate("user", "name")
+      .sort({ createdAt: -1 })
+      .lean()
+
+    // Safely try to populate book data, but don't fail if book has issues
+    try {
+      reviews = await Review.populate(reviews, {
+        path: "book",
+        select: "title author coverImage",
+      })
+    } catch (populateError) {
+      console.log("Note: Could not populate book data, but reviews are fine")
+      // Reviews will still have book IDs, just not full book objects
+    }
+
+    res.json({ success: true, reviews })
+  } catch (error) {
+    console.error("Error fetching reviews:", error)
+    res.status(500).json({ error: "Failed to fetch reviews" })
+  }
+})
+
 // Create a review
 router.post("/", protect, async (req, res) => {
   try {
