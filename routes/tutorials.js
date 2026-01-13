@@ -3,14 +3,29 @@ const router = express.Router()
 const Tutorial = require("../models/Tutorial")
 const { protect, adminOnly } = require("../middleware/auth")
 
+// Middleware to check if user is authenticated (optional)
+const optionalAuth = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1]
+  if (token) {
+    try {
+      const jwt = require("jsonwebtoken")
+      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      req.user = { _id: decoded.id, role: decoded.role }
+    } catch (error) {
+      // Token invalid, proceed as guest
+    }
+  }
+  next()
+}
+
 // Get all tutorials (public or admin)
-router.get("/", async (req, res) => {
+router.get("/", optionalAuth, async (req, res) => {
   try {
     const { status, category } = req.query
     const query = {}
 
-    // Regular users only see published tutorials
-    if (!req.headers.authorization || req.user?.role !== "admin") {
+    // Admins see ALL tutorials, regular users only see published
+    if (req.user?.role !== "admin") {
       query.status = "published"
     } else if (status) {
       query.status = status
