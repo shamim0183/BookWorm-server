@@ -14,6 +14,7 @@ const bookSchema = new mongoose.Schema(
       required: true,
     },
     description: String,
+    totalPages: Number,
     coverImage: String, // Custom uploaded cover image URL
     publishYear: Number,
     genres: [
