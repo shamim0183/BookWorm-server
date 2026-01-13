@@ -2,7 +2,6 @@ const express = require("express")
 const router = express.Router()
 const Book = require("../models/Book")
 const UserLibrary = require("../models/UserLibrary")
-const Review = require("../models/Review")
 const { protect } = require("../middleware/auth")
 
 // GET /api/recommendations - Get personalized book recommendations
@@ -106,7 +105,6 @@ router.get("/", protect, async (req, res) => {
         (e) => e.shelf === "currently-reading"
       ).length,
       wantToRead: userLibrary.filter((e) => e.shelf === "wantToRead").length,
-      favoriteGenres: topGenres || [],
     }
 
     res.json({
