@@ -56,10 +56,9 @@ router.get("/", protect, async (req, res) => {
       recommendations = await Book.find({
         _id: { $nin: userBookIds },
         genres: { $in: topGenres },
-        "ratings.average": { $gte: avgRating - 0.5 },
       })
         .populate("genres")
-        .sort({ "ratings.average": -1, totalShelved: -1 })
+        .sort({ totalShelved: -1 })
         .limit(18)
     } else {
       // New user or not enough reading history - show popular books
@@ -67,7 +66,7 @@ router.get("/", protect, async (req, res) => {
         _id: { $nin: userBookIds },
       })
         .populate("genres")
-        .sort({ "ratings.average": -1, totalShelved: -1 })
+        .sort({ totalShelved: -1 })
         .limit(18)
     }
 
