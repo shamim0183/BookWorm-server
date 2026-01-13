@@ -23,14 +23,8 @@ const tutorialSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: [
-        "Getting Started",
-        "Reading Tips",
-        "Book Management",
-        "Community",
-        "Advanced Features",
-      ],
-      default: "Getting Started",
+      trim: true,
+      default: "General",
     },
     status: {
       type: String,
