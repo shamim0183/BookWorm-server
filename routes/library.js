@@ -64,30 +64,39 @@ router.post("/", protect, async (req, res) => {
   }
 })
 
-// Update progress
+// Update reading progress
 router.put("/:id/progress", protect, async (req, res) => {
   try {
-    const { pagesRead } = req.body
-    const entry = await UserLibrary.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    })
+    const { pagesRead, totalPages } = req.body
+    const entry = await UserLibrary.findById(req.params.id)
 
-    entry.progress.pagesRead = pagesRead
-    if (entry.progress.totalPages) {
-      entry.progress.percentage = Math.round(
-        (pagesRead / entry.progress.totalPages) * 100
-      )
+    if (!entry) {
+      return res.status(404).json({ error: "Library entry not found" })
+    }
+
+    if (entry.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" })
+    }
+
+    const percentage = Math.round((pagesRead / totalPages) * 100)
+
+    entry.progress = {
+      pagesRead: parseInt(pagesRead),
+      totalPages: parseInt(totalPages),
+      percentage,
+    }
+
+    // If progress reaches 100%, automatically move to "read" shelf and set dateFinished
+    if (percentage >= 100) {
+      entry.shelf = "read"
+      entry.dateFinished = new Date()
     }
 
     await entry.save()
 
-    const updated = await UserLibrary.findById(entry._id).populate({
-      path: "book",
-      populate: { path: "genres" },
-    })
+    const updatedEntry = await UserLibrary.findById(entry._id).populate("book")
 
-    res.json({ success: true, library: updated })
+    res.json({ success: true, entry: updatedEntry })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
