@@ -8,7 +8,7 @@ const { protect: auth } = require("../middleware/auth")
 router.post("/follow/:userId", auth, async (req, res) => {
   try {
     const { userId } = req.params
-    const currentUserId = req.user.userId
+    const currentUserId = req.user._id.toString()
 
     // Prevent self-follow
     if (userId === currentUserId) {
@@ -54,7 +54,7 @@ router.post("/follow/:userId", auth, async (req, res) => {
 router.delete("/unfollow/:userId", auth, async (req, res) => {
   try {
     const { userId } = req.params
-    const currentUserId = req.user.userId
+    const currentUserId = req.user._id.toString()
 
     // Update both users
     await User.findByIdAndUpdate(currentUserId, {
@@ -117,7 +117,7 @@ router.get("/following/:userId", auth, async (req, res) => {
 // Get activity feed (from users you follow)
 router.get("/feed", auth, async (req, res) => {
   try {
-    const currentUserId = req.user.userId
+    const currentUserId = req.user._id.toString()
     const limit = parseInt(req.query.limit) || 20
 
     // Get current user's following list
@@ -152,7 +152,7 @@ router.get("/users/search", auth, async (req, res) => {
 
     const users = await User.find({
       name: { $regex: q, $options: "i" },
-      _id: { $ne: req.user.userId }, // Exclude current user
+      _id: { $ne: req.user._id }, // Exclude current user
     })
       .select("name email photoURL followers following")
       .limit(20)
@@ -178,7 +178,7 @@ router.get("/profile/:userId", auth, async (req, res) => {
     }
 
     // Check if current user is following this user
-    const isFollowing = user.followers.includes(req.user.userId)
+    const isFollowing = user.followers.includes(req.user._id)
 
     res.json({
       ...user.toObject(),
