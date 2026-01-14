@@ -4,6 +4,39 @@ const UserLibrary = require("../models/UserLibrary")
 const Book = require("../models/Book")
 const { protect } = require("../middleware/auth")
 
+// Update shelf
+router.put("/:id/shelf", protect, async (req, res) => {
+  try {
+    const { shelf } = req.body
+    const entry = await UserLibrary.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    })
+
+    if (!entry) {
+      return res.status(404).json({ error: "Library entry not found" })
+    }
+
+    entry.shelf = shelf
+
+    // Set dateFinished when moving to 'read' shelf
+    if (shelf === "read" && !entry.dateFinished) {
+      entry.dateFinished = new Date()
+    }
+
+    await entry.save()
+
+    const updated = await UserLibrary.findById(entry._id).populate({
+      path: "book",
+      populate: { path: "genres" },
+    })
+
+    res.json({ success: true, library: updated })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Get user library
 router.get("/", protect, async (req, res) => {
   try {
