@@ -38,6 +38,7 @@ app.use("/api/users", require("./routes/users"))
 app.use("/api/reviews", require("./routes/reviews"))
 app.use("/api/tutorials", require("./routes/tutorials"))
 app.use("/api/admin", require("./routes/admin"))
+app.use("/api/social", require("./routes/social"))
 
 // Error handling
 app.use((err, req, res, next) => {
