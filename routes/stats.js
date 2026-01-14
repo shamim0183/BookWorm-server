@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const UserLibrary = require("../models/UserLibrary")
+const Review = require("../models/Review")
 const { protect } = require("../middleware/auth")
 
 // Get user library statistics
@@ -10,6 +11,9 @@ router.get("/", protect, async (req, res) => {
 
     // Get all library entries for the user
     const library = await UserLibrary.find({ user: userId }).populate("book")
+
+    // Get user's reviews to calculate average rating
+    const userReviews = await Review.find({ user: userId })
 
     // Calculate statistics
     const stats = {
@@ -41,13 +45,9 @@ router.get("/", protect, async (req, res) => {
         )
       }).length,
       averageRating:
-        library.filter((e) => e.personalRating).length > 0
-          ? (
-              library.reduce(
-                (sum, entry) => sum + (entry.personalRating || 0),
-                0
-              ) / library.filter((e) => e.personalRating).length
-            ).toFixed(1)
+        userReviews.length > 0
+          ? userReviews.reduce((sum, review) => sum + (review.rating || 0), 0) /
+            userReviews.length
           : 0,
     }
 

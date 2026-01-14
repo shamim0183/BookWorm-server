@@ -17,7 +17,7 @@ router.get("/", protect, async (req, res) => {
     const booksRead = await UserLibrary.countDocuments({
       user: req.user._id,
       shelf: "read",
-      dateCompleted: {
+      dateFinished: {
         $gte: new Date(currentYear, 0, 1),
         $lt: new Date(currentYear + 1, 0, 1),
       },
@@ -70,7 +70,7 @@ router.post("/", protect, async (req, res) => {
     const booksRead = await UserLibrary.countDocuments({
       user: req.user._id,
       shelf: "read",
-      dateCompleted: {
+      dateFinished: {
         $gte: new Date(goalYear, 0, 1),
         $lt: new Date(goalYear + 1, 0, 1),
       },
