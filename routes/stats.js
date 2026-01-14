@@ -95,11 +95,9 @@ router.get("/enhanced", protect, async (req, res) => {
       const year = date.getFullYear()
 
       const count = readBooks.filter((entry) => {
-        if (!entry.dateCompleted) return false
-        const completed = new Date(entry.dateCompleted)
-        return (
-          completed.getMonth() === month && completed.getFullYear() === year
-        )
+        if (!entry.dateFinished) return false
+        const finished = new Date(entry.dateFinished)
+        return finished.getMonth() === month && finished.getFullYear() === year
       }).length
 
       monthlyBooks.push({
@@ -158,8 +156,8 @@ router.get("/enhanced", protect, async (req, res) => {
 
     // 4. Books read this year
     const booksThisYear = readBooks.filter((entry) => {
-      if (!entry.dateCompleted) return false
-      return new Date(entry.dateCompleted).getFullYear() === currentYear
+      if (!entry.dateFinished) return false
+      return new Date(entry.dateFinished).getFullYear() === currentYear
     }).length
 
     // 5. Total pages read

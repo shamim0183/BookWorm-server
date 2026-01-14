@@ -95,10 +95,12 @@ router.post("/", protect, async (req, res) => {
     // Update book rating (optional - simple average)
     const bookReviews = await Review.find({ book: bookId, status: "approved" })
     const avgRating =
-      bookReviews.reduce((sum, r) => sum + r.rating, 0) / bookReviews.length
+      bookReviews.length > 0
+        ? bookReviews.reduce((sum, r) => sum + r.rating, 0) / bookReviews.length
+        : 0
 
     await Book.findByIdAndUpdate(bookId, {
-      "ratings.average": avgRating,
+      "ratings.average": avgRating || 0,
       "ratings.count": bookReviews.length,
     })
 
@@ -141,10 +143,12 @@ router.put("/:id", protect, async (req, res) => {
       status: "approved",
     })
     const avgRating =
-      bookReviews.reduce((sum, r) => sum + r.rating, 0) / bookReviews.length
+      bookReviews.length > 0
+        ? bookReviews.reduce((sum, r) => sum + r.rating, 0) / bookReviews.length
+        : 0
 
     await Book.findByIdAndUpdate(review.book, {
-      "ratings.average": avgRating,
+      "ratings.average": avgRating || 0,
       "ratings.count": bookReviews.length,
     })
 
