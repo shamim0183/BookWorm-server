@@ -37,6 +37,7 @@ app.use("/api/goals", require("./routes/goals"))
 app.use("/api/users", require("./routes/users"))
 app.use("/api/reviews", require("./routes/reviews"))
 app.use("/api/tutorials", require("./routes/tutorials"))
+app.use("/api/admin", require("./routes/admin"))
 
 // Error handling
 app.use((err, req, res, next) => {
