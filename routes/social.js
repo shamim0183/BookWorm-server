@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const User = require("../models/User")
 const Activity = require("../models/Activity")
-const auth = require("../middleware/auth")
+const { protect: auth } = require("../middleware/auth")
 
 // Follow a user
 router.post("/follow/:userId", auth, async (req, res) => {
