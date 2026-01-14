@@ -104,9 +104,14 @@ router.post("/firebase", async (req, res) => {
     // Verify Firebase ID token
     let decodedToken
     try {
+      console.log("Verifying Firebase token...")
       decodedToken = await admin.auth().verifyIdToken(firebaseToken)
+      console.log("Firebase token verified successfully")
     } catch (error) {
-      return res.status(401).json({ error: "Invalid Firebase token" })
+      console.error("Firebase token verification failed:", error.message)
+      return res
+        .status(401)
+        .json({ error: "Invalid Firebase token: " + error.message })
     }
 
     // Check if user exists, if not create one
