@@ -57,7 +57,7 @@ router.get("/", protect, async (req, res) => {
         _id: { $nin: userBookIds },
         genres: { $in: topGenres },
       })
-        .select("title author coverImage genres ratings totalShelved")
+        .select("title author coverImage coverId genres ratings totalShelved")
         .populate("genres")
         .sort({ totalShelved: -1 })
         .limit(18)
@@ -66,7 +66,7 @@ router.get("/", protect, async (req, res) => {
       recommendations = await Book.find({
         _id: { $nin: userBookIds },
       })
-        .select("title author coverImage genres ratings totalShelved")
+        .select("title author coverImage coverId genres ratings totalShelved")
         .populate("genres")
         .sort({ totalShelved: -1 })
         .limit(18)
