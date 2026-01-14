@@ -44,7 +44,7 @@ router.get("/book/:bookId", async (req, res) => {
 
     // Get approved reviews with populated user and book data
     let reviews = await Review.find({ book: bookId, status: "approved" })
-      .populate("user", "name")
+      .populate("user", "name photoURL")
       .sort({ createdAt: -1 })
       .lean()
 
