@@ -111,6 +111,16 @@ router.put("/:id/progress", protect, async (req, res) => {
       return res.status(403).json({ error: "Not authorized" })
     }
 
+    // Validate totalPages
+    if (!totalPages || totalPages === 0 || isNaN(totalPages)) {
+      return res.status(400).json({ error: "Invalid total pages" })
+    }
+
+    // Validate pagesRead
+    if (isNaN(pagesRead) || pagesRead < 0 || pagesRead > totalPages) {
+      return res.status(400).json({ error: "Invalid pages read" })
+    }
+
     const percentage = Math.round((pagesRead / totalPages) * 100)
 
     entry.progress = {
@@ -131,6 +141,7 @@ router.put("/:id/progress", protect, async (req, res) => {
 
     res.json({ success: true, entry: updatedEntry })
   } catch (error) {
+    console.error("Progress update error:", error)
     res.status(500).json({ error: error.message })
   }
 })
