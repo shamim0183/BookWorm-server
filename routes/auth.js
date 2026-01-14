@@ -49,11 +49,28 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body
 
+    console.log("Login attempt for:", email)
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" })
+    }
+
     const user = await User.findOne({ email }).select("+password")
-    if (!user || !(await user.comparePassword(password))) {
+
+    if (!user) {
+      console.log("User not found:", email)
       return res.status(401).json({ error: "Invalid credentials" })
     }
 
+    console.log("User found, comparing password")
+    const isMatch = await user.comparePassword(password)
+
+    if (!isMatch) {
+      console.log("Password mismatch for:", email)
+      return res.status(401).json({ error: "Invalid credentials" })
+    }
+
+    console.log("Password matched, generating token")
     const token = generateToken(user._id)
 
     res.json({
@@ -68,6 +85,7 @@ router.post("/login", async (req, res) => {
       },
     })
   } catch (error) {
+    console.error("Login error:", error)
     res.status(500).json({ error: error.message })
   }
 })
